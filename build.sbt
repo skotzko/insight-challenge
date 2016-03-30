@@ -8,5 +8,7 @@ lazy val root = (project in file(".")).
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor"   % "2.4.2",
   "com.typesafe.akka" %% "akka-testkit" % "2.4.2" % "test",
-  "org.scalatest" %% "scalatest" % "2.2.6" % "test"
+  "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+  "io.spray" %%  "spray-json" % "1.3.2"
 )
+//  "net.liftweb" %% "lift-json" % "2.6"
