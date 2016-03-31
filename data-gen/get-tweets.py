@@ -10,8 +10,8 @@ import json
 import os
 
 # loads Twitter credentials from .twitter file that is in the same directory as this script
-file_dir = os.path.dirname(os.path.realpath(__file__)) 
-with open(file_dir + '/.twitter') as twitter_file:  
+file_dir = os.path.dirname(os.path.realpath(__file__))
+with open(file_dir + '/.twitter') as twitter_file:
     twitter_cred = json.load(twitter_file)
 
 # authentication from the credentials file above
