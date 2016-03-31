@@ -1,19 +1,20 @@
-package main
-
-import akka.actor._
+import akka.actor.{ActorSystem, Props}
 import actors._
+import messages._
 
 object Main extends App {
   val system = ActorSystem("insight")
-  val process = system.actorOf(Props[ProcessActor], "process")
-  val stats = system.actorOf(Props[StatsActor], "stats")
-  val cleanup = system.actorOf(Props(new CleanupActor(process)), "cleaning")
+  val process = system.actorOf(Props[ProcessingMasterActor], "process")
+  val cleaner = system.actorOf(Props(new CleanupActor(process)), "cleaner")
+  val fetcher = system.actorOf(Props(new DataFetchActor(cleaner)), "fetcher")
 
-  cleanup ! """{"limit":{"track":1,"timestamp_ms":"1459207521864"}}     """
-  cleanup ! "msg1"
-  cleanup ! "msg2"
-  cleanup ! "msg3"
+  fetcher ! BeginWork
+  fetcher ! """{"limit":{"track":1,"timestamp_ms":"1459207521864"}}     """
+  fetcher ! "msg1"
+  fetcher ! "msg2"
+  fetcher ! "msg3"
 
 
+  Thread.sleep(5000)
   system.terminate
 }

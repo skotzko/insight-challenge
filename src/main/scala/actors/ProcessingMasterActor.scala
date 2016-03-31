@@ -1,31 +1,44 @@
 package actors
 
-import akka.actor.Actor
+import messages.{CountYourChildren, Tweet}
 
 /**
-  * Created by andrew on 3/31/16.
+  * Builds the hashtag graph through child [[VertexActor]]s, and
+  * keeps the stats on the graph.
   */
-class ProcessingMasterActor extends Actor {
-  // actor uses child per entity pattern
+class ProcessingMasterActor extends ActorBase {
   def receive = {
+    case CountYourChildren => sender ! CountMyChildren
+    case x:Tweet => processIntoGraph(x)
+  }
+
+
+  def processIntoGraph(tweet: Tweet): Unit = {
     // create child unless already exists by hashtag name
     // hashtags = ["spark", "akka", "hadoop"]
+    createOrUpdateHashtagActors(tweet.hashtags)
 
-    case CountVertices => sender ! numberOfChildren; checkIfShouldTerminate
+//    case CountVertices => sender ! numberOfChildren; checkIfShouldTerminate
 //    case
 
 
   }
 
-  def numberOfChildren = context.children.toList.length
-
+  // TODO: shouldn't this go in the vertex actors instead?
   def checkIfShouldTerminate = {
     // if has no more children (aka no more vertices) then this actor should shut itself down
-    if (numberOfChildren == 0) context.stop(self)
+    if (CountMyChildren == 0) context.stop(self)
   }
 
+
   def createOrUpdateHashtagActors(hashtags: List[String]) = {
-    var actor = context.children
+    for (t <- hashtags ) {
+      // check if vertex actor exists for this exact hashtag
+      val child = context.child(t)
+      if (child.)
+
+    }
+
   }
 
 

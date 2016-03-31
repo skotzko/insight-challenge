@@ -4,23 +4,32 @@ import akka.actor._
 //import net.liftweb.json._
 import spray.json._
 import DefaultJsonProtocol._ // if you don't supply your own Protocol (see below)
-//import CountChildren
+import messages._
 
+/**
+  * Cleans up JSON payload sent by [[DataFetchActor]] and extracts [[Tweet]].
+  * Filters out rate limit messages from the Twitter API.
+  *
+  * @param processor Actor that processes the tweets into a hashtag graph
+  */
 class CleanupActor(val processor: ActorRef) extends ActorBase {
   def receive = {
     // throw away rate-limiting messages
     case x:String if x.toString.startsWith("{\"limit\":") => println("rate limit! ignoring\n")
-    case x:CountChildren => CountMyChildren
+
+    case CountYourChildren => CountMyChildren
 
     // otherwise clean it and send on for processing
-    case x:String => clean(x); processor ! x
+    case x:String => cleanAndSend(x)
   }
 
 
-  def clean(json: String) = {
+  def cleanAndSend(json: String) = {
     // Mon Mar 28 23:23:12 +0000 2016
     // return timestamp & hashtags
+    // TODO: actually clean up JSON & extract
     println(s"cleaning up $json")
+    processor ! json
   }
 
   //def parseTweet(json: String) = {
