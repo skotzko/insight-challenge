@@ -6,7 +6,7 @@ import messages._
 /**
   * Loads batch of tweets and sends them on to [[CleanupActor]] for processing.
   *
-  * @param cleanup  The actor that will clean tweets
+  * @param cleanup The actor that will clean tweets
   */
 class DataFetchActor(val cleanup: ActorRef) extends ActorBase {
   private var initialized = false
@@ -15,7 +15,7 @@ class DataFetchActor(val cleanup: ActorRef) extends ActorBase {
     case BeginWork => loadAndProcessTweets
     case StopWork => self ! PoisonPill
     case CountYourChildren => CountMyChildren
-    case x:String => cleanup ! x
+    case x: String => cleanup ! x
   }
 
 
@@ -24,6 +24,7 @@ class DataFetchActor(val cleanup: ActorRef) extends ActorBase {
     */
   def loadAndProcessTweets(): Unit = {
     if (!initialized) initialized = true; println("beginning work!")
+
     // send tweets for processing
     cleanup ! loadTweets
   }

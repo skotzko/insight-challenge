@@ -1,5 +1,6 @@
 package actors
 
+import akka.actor.Props
 import messages.{CountYourChildren, Tweet}
 
 /**
@@ -35,7 +36,13 @@ class ProcessingMasterActor extends ActorBase {
     for (t <- hashtags ) {
       // check if vertex actor exists for this exact hashtag
       val child = context.child(t)
-      if (child.)
+      if (child.isEmpty) {
+        // create the vertex actor by name
+        context.actorOf(Props[VertexActor], t)
+      } else {
+        // update the graph for this vertex
+        // TODO: tell the child the new hashtags for its graph
+      }
 
     }
 
