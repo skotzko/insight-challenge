@@ -3,6 +3,8 @@ import actors._
 import messages._
 
 object Main extends App {
+
+
   val system = ActorSystem("insight")
   val process = system.actorOf(Props[ProcessingMasterActor], "process")
   val cleaner = system.actorOf(Props(new CleanupActor(process)), "cleaner")

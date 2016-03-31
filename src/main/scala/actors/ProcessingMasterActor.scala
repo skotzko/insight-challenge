@@ -1,28 +1,39 @@
 package actors
 
 import akka.actor.Props
-import messages.{CountYourChildren, Tweet}
+import com.github.nscala_time.time.Imports._
+import messages.{CountYourChildren, Tweet, UpdateHashtagGraph}
 
 /**
   * Builds the hashtag graph through child [[VertexActor]]s, and
   * keeps the stats on the graph.
   */
+
 class ProcessingMasterActor extends ActorBase {
+  private var max_timestamp : Long = _
+  private val time_formatter = DateTimeFormat.forPattern("EEE MMM dd H:mm:ss Z yyyy")
+
+  override def preStart = {
+    // use UTC time for everything
+    DateTimeZone.setDefault(DateTimeZone.UTC)
+  }
+
   def receive = {
     case CountYourChildren => sender ! CountMyChildren
-    case x:Tweet => processIntoGraph(x)
+    case x:Tweet => processTweetIntoGraph(x)
   }
 
 
-  def processIntoGraph(tweet: Tweet): Unit = {
-    // create child unless already exists by hashtag name
-    // hashtags = ["spark", "akka", "hadoop"]
+  def processTweetIntoGraph(tweet: Tweet): Unit = {
+    // update max_timestamp if need be
+    if (tweet.created_at > max_timestamp) max_timestamp = tweet.created_at
+
+    // TODO: if message is outside 60s window, dont process into graph but reprint avg
+    
+    // if no hashtags, still process it as this will evict some from graph
+
+    // process as normal
     createOrUpdateHashtagActors(tweet.hashtags)
-
-//    case CountVertices => sender ! numberOfChildren; checkIfShouldTerminate
-//    case
-
-
   }
 
   // TODO: shouldn't this go in the vertex actors instead?
@@ -34,14 +45,12 @@ class ProcessingMasterActor extends ActorBase {
 
   def createOrUpdateHashtagActors(hashtags: List[String]) = {
     for (t <- hashtags ) {
-      // check if vertex actor exists for this exact hashtag
+      // check if vertex actor exists for hashtag, otherwise make it
       val child = context.child(t)
       if (child.isEmpty) {
-        // create the vertex actor by name
         context.actorOf(Props[VertexActor], t)
       } else {
-        // update the graph for this vertex
-        // TODO: tell the child the new hashtags for its graph
+        child.get ! new UpdateHashtagGraph(hashtags)
       }
 
     }

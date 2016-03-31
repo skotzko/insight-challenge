@@ -18,4 +18,7 @@ object CountYourChildren
 class CleanJson(val payload: String)
 
 /** Class to be extracted from the [[CleanJson.payload]] */
-case class Tweet(created_at : String, hashtags: List[String])
+case class Tweet(created_at: Long, hashtags: List[String])
+
+/** Update command for [[actors.VertexActor]]s */
+class UpdateHashtagGraph(val hashtags: List[String])
