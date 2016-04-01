@@ -9,27 +9,30 @@ import messages._
 /**
   * Cleans up JSON payload sent by [[DataFetchActor]] and extracts [[Tweet]].
   * Filters out rate limit messages from the Twitter API.
+  * Sends [[Tweet]]s on for handling by [[ProcessingMasterActor]].
   *
   * @param processor Actor that processes the tweets into a hashtag graph
   */
 class CleanupActor(val processor: ActorRef) extends ActorBase {
   def receive = {
     // throw away rate-limiting messages
-    case x:String if x.toString.startsWith("{\"limit\":") => println("rate limit! ignoring\n")
-
-    case CountYourChildren => CountMyChildren
-
-    // otherwise clean it and send on for processing
+    case x:String if x.toString.startsWith("{\"limit\":") => log("ignoring limit message")
     case x:String => cleanAndSend(x)
+    case CountYourChildren => CountMyChildren
   }
 
 
   def cleanAndSend(json: String) = {
     // Mon Mar 28 23:23:12 +0000 2016
-    // return timestamp & hashtags
-    // TODO: actually clean up JSON & extract
-    println(s"cleaning up $json")
-    processor ! json
+    // parse tweet w/ timestamp & hashtags
+    // TODO: actually extract JSON
+    log(s"cleaning up $json")
+
+    val timestampStr = "Mon Mar 28 23:23:12 +0000 2016"
+    val timestamp = parseUnixTime(timestampStr)
+    val hashtags = List("scala", "akka", "Akka", "Hadoop")
+
+    processor ! new Tweet(timestamp, hashtags)
   }
 
   //def parseTweet(json: String) = {
