@@ -4,7 +4,6 @@ import akka.actor.ActorRef
 import messages._
 import scala.io.Source
 
-
 /**
   * Loads batch of tweets and sends them on to [[CleanupActor]] for processing.
   *
@@ -13,6 +12,7 @@ import scala.io.Source
   */
 class DataFetchActor(val cleaner: ActorRef, val batchLimit: Int = 50, val inputFilePath: String = "tweet_input/tweets.txt") extends ActorBase {
   private var initialized = false
+  var fetchCount = 0
 
   def receive = {
     case BeginWork => loadAndProcessTweets()
@@ -21,7 +21,6 @@ class DataFetchActor(val cleaner: ActorRef, val batchLimit: Int = 50, val inputF
     case x: String => cleaner ! x
   }
 
-
   /**
     * Loads tweets in batch and sends on for processing.
     *
@@ -29,11 +28,16 @@ class DataFetchActor(val cleaner: ActorRef, val batchLimit: Int = 50, val inputF
     */
   def loadAndProcessTweets(): Unit = {
     if (!initialized) initialized = true;
-    log("beginning work!")
-
-    // TODO: revisit this for loading/ iterator optimization
-    log("looping through lines")
     val source = Source.fromFile(inputFilePath, "UTF-8")
-    for (tweet <- source.getLines.take(batchLimit)) cleaner ! tweet
+    for (tweet <- source.getLines.take(batchLimit)) {
+      cleaner ! tweet
+      fetchCount += 1
+    }
   }
+
+  override def postStop(): Unit = {
+    log(s"shutting down. Sent $fetchCount tweets.")
+    super.postStop()
+  }
+
 }

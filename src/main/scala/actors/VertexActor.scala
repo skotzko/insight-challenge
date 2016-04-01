@@ -29,7 +29,7 @@ class VertexActor extends ActorBase {
       }
     }
 
-    log(s"${self.path.name} updated graph")
+    log(s"${self.path.name} updated graph. Now has ${CountMyChildren} edges.")
   }
 
 

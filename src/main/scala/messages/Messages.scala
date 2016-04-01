@@ -14,11 +14,8 @@ object StopWork
 object CountYourChildren
 
 // CONTENT MESSAGES
-/** Clean the JSON `payload` */
-class CleanJson(val payload: String)
-
-/** Class to be extracted from the [[CleanJson.payload]] */
-case class Tweet(created_at: Long, hashtags: List[String])
-
 /** Update command for [[actors.VertexActor]]s */
 class UpdateHashtagGraph(val hashtags: List[String])
+
+/** Class extracted from JSON */
+case class Tweet(created_at: Long, hashtags: List[String])
