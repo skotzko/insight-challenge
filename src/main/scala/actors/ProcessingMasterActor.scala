@@ -51,7 +51,7 @@ class ProcessingMasterActor(val cutoffWindowMs : Int = 60000) extends ActorBase 
 
     // build/update map of actorRef -> timestamp, then
     // TODO: LEFT OFF HERE BUILDING MAP FOR EXPIRING GRAPH NODES
-    for (tag <- t.hashtags) nodeTimestampMap(tag, t.created_at)
+//    for (tag <- t.hashtags) nodeTimestampMap(tag, t.created_at)
 
     // 1. expire old actorrefs behind 60s window
     // 2. update timestamps when new tweets come in within the window and graphs are updated
