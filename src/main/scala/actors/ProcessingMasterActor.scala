@@ -9,7 +9,7 @@ import scala.collection.mutable
   * Builds the hashtag graph through child [[VertexActor]]s, and
   * keeps the stats on the graph.
   */
-class ProcessingMasterActor(val cutoffWindowMs : Int = 60000) extends ActorBase {
+class ProcessingMasterActor(val cutoffWindowSeconds : Int = 60) extends ActorBase {
   var maxTimestamp : Long = _
   var expireThreshold : Long = _
   var printer : ActorRef = _
@@ -18,7 +18,7 @@ class ProcessingMasterActor(val cutoffWindowMs : Int = 60000) extends ActorBase 
   var lastAvgDegree = 0.00
   var timeStampChanges = 0
   var calculationCount = 0
-  var nodeTimestampMap = mutable.Map[ActorRef, Long]()
+  var nodeTimestampMap = mutable.Map[String, Long]()
 
   override def preStart = printer = context.actorOf(Props[PrinterActor], "printer")
 
@@ -37,29 +37,30 @@ class ProcessingMasterActor(val cutoffWindowMs : Int = 60000) extends ActorBase 
     receivedCount +=1
     updateTimestamps(t)
     if (t.created_at > expireThreshold && !t.hashtags.isEmpty) updateGraph(t.hashtags)
-    expireOldGraphNodes // order-sensitive, needs to be after graph update in case new tweet updates a node
+    expireOldGraphNodes // order-sensitive, needs to be after graph update in case new tweet keeps a key from expiring
     calculateAvgDegree
     processedCount +=1
   }
 
+
+  // is this tweet older than max - 60s? then just re-print the avg
+  // is this tweet within 60s, but has <2 hashtags? don't update graph, but expire old
+
+
+
   def updateTimestamps(t: Tweet) = {
-    // update maxTimestamp if need be
-    if (t.created_at > maxTimestamp) maxTimestamp = t.created_at; timeStampChanges += 1
+    // update maxTimestamp & expire time cutoff if new max
+    if (t.created_at > maxTimestamp)
+      timeStampChanges += 1
+      maxTimestamp = t.created_at
+      expireThreshold = maxTimestamp - cutoffWindowSeconds
 
-    // calculate the expiry cutoff
-    expireThreshold = maxTimestamp - cutoffWindowMs
-
-    // build/update map of actorRef -> timestamp, then
-    // TODO: LEFT OFF HERE BUILDING MAP FOR EXPIRING GRAPH NODES
-//    for (tag <- t.hashtags) nodeTimestampMap(tag, t.created_at)
-    // fix this
-
-    // 1. expire old actorrefs behind 60s window
-    // 2. update timestamps when new tweets come in within the window and graphs are updated
+    // build/update map of actor name -> timestamp, then
+    for (tag <- t.hashtags) nodeTimestampMap += (tag -> t.created_at)
   }
 
   def expireOldGraphNodes = {
-    // TODO: add expiring logic
+    // TODO: add logic to expire all nodes who are still behind cutoff window
   }
 
   def calculateAvgDegree = {
