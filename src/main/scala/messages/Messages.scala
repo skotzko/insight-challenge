@@ -18,4 +18,4 @@ object CountYourChildren
 class UpdateHashtagGraph(val hashtags: List[String])
 
 /** Class extracted from JSON */
-case class Tweet(created_at: Long, hashtags: List[String])
+//case class Tweet(created_at: Long, hashtags: List[String])
