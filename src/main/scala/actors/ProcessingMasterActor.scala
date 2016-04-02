@@ -40,6 +40,7 @@ class ProcessingMasterActor(val cutoffWindowSeconds : Int = 60) extends ActorBas
     expireOldGraphNodes // order-sensitive, needs to be after graph update in case new tweet keeps a key from expiring
     calculateAvgDegree
     processedCount +=1
+
   }
 
 
